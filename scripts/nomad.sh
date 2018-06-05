@@ -17,7 +17,7 @@ IFACE=`route -n | awk '$1 == "192.168.2.0" {print $8}'`
 CIDR=`ip addr show ${IFACE} | awk '$2 ~ "192.168.2" {print $2}'`
 IP=${CIDR%%/24}
 
-grep NOMAD_ADDR ~/.bash_profile || {
+grep NOMAD_ADDR ~/.bash_profile &>/dev/null || {
   echo export NOMAD_ADDR=http://${IP}:4646 | tee -a ~/.bash_profile
 }
 
