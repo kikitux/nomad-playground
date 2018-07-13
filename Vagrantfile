@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
         consul.vm.hostname = vm_name
         consul.vm.network "private_network", ip: "192.168.2.1#{i}"
         consul.vm.network "forwarded_port", guest: 8500, host: 8500 + i
-      consul.vm.provision "shell", path: "scripts/consul.sh"
+      consul.vm.provision "shell", path: "scripts/consul.sh", run: "always"
     end
   end
 
@@ -21,8 +21,8 @@ Vagrant.configure("2") do |config|
       nomad.vm.hostname = vm_name
       nomad.vm.network "private_network", ip: "192.168.2.2#{i}"
       nomad.vm.network "forwarded_port", guest: 8200, host: 8200 + i
-      nomad.vm.provision "shell", path: "scripts/consul.sh"
-      nomad.vm.provision "shell", path: "scripts/nomad.sh"
+      nomad.vm.provision "shell", path: "scripts/consul.sh", run: "always" 
+      nomad.vm.provision "shell", path: "scripts/nomad.sh", run: "always"
     end
   end
 
@@ -32,8 +32,8 @@ Vagrant.configure("2") do |config|
       nomad.vm.hostname = vm_name
       nomad.vm.network "private_network", ip: "192.168.2.3#{i}"
       nomad.vm.provision "shell", path: "scripts/docker.sh"
-      nomad.vm.provision "shell", path: "scripts/consul.sh"
-      nomad.vm.provision "shell", path: "scripts/nomad.sh"
+      nomad.vm.provision "shell", path: "scripts/consul.sh", run: "always"
+      nomad.vm.provision "shell", path: "scripts/nomad.sh", run: "always"
     end
   end
 
