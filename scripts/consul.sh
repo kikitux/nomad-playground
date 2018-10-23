@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-IFACE=`route -n | awk '$1 == "192.168.2.0" {print $8}'`
-CIDR=`ip addr show ${IFACE} | awk '$2 ~ "192.168.2" {print $2}'`
+IFACE=`route -n | awk '$1 == "0.0.0.0" {print $8;exit}'`
+CIDR=`ip addr show ${IFACE}  | awk '$0 ~ "inet " {print $2}'`
 IP=${CIDR%%/24}
 
 if [ -d /vagrant ]; then
