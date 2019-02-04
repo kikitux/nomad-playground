@@ -3,31 +3,61 @@
 
 Vagrant.configure("2") do |config|
   config.vm.box = "alvaro/xenial64"
+
   config.vm.provider "virtualbox" do |v|
-    v.memory = 1024
-    v.cpus = 2
+    v.memory = 768
+    v.cpus = 1
   end
 
-  #server
-  config.vm.define "server" do |s|
-    s.vm.hostname = "server"
-    s.vm.network "private_network", ip: "192.168.56.20"
-    s.vm.network "forwarded_port", guest: 4646, host: 4646 #nomad
-    s.vm.network "forwarded_port", guest: 8200, host: 8200 #vault
-    s.vm.network "forwarded_port", guest: 8500, host: 8500 #consul
-    s.vm.provision "shell", path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/consul-1server/consul.sh"
-    s.vm.provision "shell", path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/nomad-1server/nomad.sh"
-    s.vm.provision "shell", path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/vault-dev/vault.sh"
-  end
+  #We will iterate over network, and define dc count
+  ["192.168.56", "192.168.66" ].to_enum.with_index(1).each do |ip, dc|
 
-  #client
-  (1..2).each do |i|  
-    config.vm.define "client#{i}" do |c|
-      c.vm.hostname = "client#{i}"
-      c.vm.network "private_network", ip: "192.168.56.#{30+i}"
-      c.vm.provision "shell", path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/consul-client/consul.sh"
-      c.vm.provision "shell", path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/nomad-client/nomad.sh"
+    #server
+    config.vm.define "server-dc#{dc}" do |s|
+
+      #ip of server on first DC
+      WAN_JOIN ||= "#{ip}.20"
+
+      s.vm.hostname = "server-dc#{dc}"
+      s.vm.network "private_network", ip: "#{ip}.20"
+
+      s.vm.network "forwarded_port", guest: 4646, host: 4646 if dc == 1 #nomad
+      s.vm.network "forwarded_port", guest: 8200, host: 8200 if dc == 1 #vault
+      s.vm.network "forwarded_port", guest: 8500, host: 8500 if dc == 1 #consul
+
+      #consul
+      s.vm.provision "shell", env: { "DC" => "dc#{dc}" , "WAN_JOIN" => WAN_JOIN },
+        path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/consul-1server/consul.sh"
+
+      #nomad
+      s.vm.provision "shell", env: { "DC" => "dc#{dc}" , "WAN_JOIN" => WAN_JOIN },
+        path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/nomad-1server/nomad.sh"
+      
+      #vault-dev only on dc1
+      if dc == 1
+        s.vm.provision "shell", path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/vault-dev/vault.sh"
+      end
+
     end
+    #end server
+
+    #client
+    (1..1).each do |i|  
+      config.vm.define "client#{i}-dc#{dc}" do |c|
+
+        c.vm.hostname = "client#{i}-dc#{dc}"
+        c.vm.network "private_network", ip: "#{ip}.#{30+i}"
+
+        c.vm.provision "shell", env: { "DC" => "dc#{dc}" , "LAN_JOIN" => "#{ip}.#{20}"},
+          path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/consul-client/consul.sh"
+
+        c.vm.provision "shell", env: { "DC" => "dc#{dc}" , "LAN_JOIN" => "#{ip}.#{20}"},
+          path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/nomad-client/nomad.sh"
+      end
+    end
+    #end client
+
   end
+  #end dc
 
 end
