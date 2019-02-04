@@ -9,21 +9,31 @@ Vagrant.configure("2") do |config|
   end
 
   #server
-  config.vm.define vm_name = "server" do |s|
-    s.vm.hostname = vm_name
-    s.vm.network "private_network", ip: "192.168.2.20"
-    s.vm.network "forwarded_port", guest: 8200, host: 8200 + i
-    #s.vm.provision "shell", path: "scripts/consul.sh", run: "always" 
-    #s.vm.provision "shell", path: "scripts/nomad.sh", run: "always"
+  config.vm.define "server" do |s|
+    s.vm.hostname = "server"
+    s.vm.network "private_network", ip: "192.168.56.20"
+    s.vm.network "forwarded_port", guest: 4600, host: 4600 #nomad
+    s.vm.network "forwarded_port", guest: 8200, host: 8200 #vault
+    s.vm.network "forwarded_port", guest: 8500, host: 8500 #consul
+
+    #consul
+    s.vm.provision "shell", path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/consul-1server/consul.sh"
+
+    #vault
+    s.vm.provision "shell", path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/vault-dev/vault.sh"
   end
 
   #agent
-  config.vm.define vm_name = "client" do |c|
-    c.vm.hostname = vm_name
-    c.vm.network "private_network", ip: "192.168.2.30"
-    c.vm.provision "shell", path: "scripts/docker.sh"
-    #c.vm.provision "shell", path: "scripts/consul.sh", run: "always"
-    #c.vm.provision "shell", path: "scripts/nomad.sh", run: "always"
+  config.vm.define "client" do |c|
+    c.vm.hostname = "client"
+    c.vm.network "private_network", ip: "192.168.56.30"
+
+    #install docker
+    c.vm.provision "shell", path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/provision/docker.sh"
+
+    #consul
+    c.vm.provision "shell", path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/consul-client/consul.sh"
+
   end
 
 end
