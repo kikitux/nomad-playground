@@ -1,40 +1,29 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
 Vagrant.configure("2") do |config|
-  config.vm.box = "cbednarski/ubuntu-1604"
+  config.vm.box = "alvaro/xenial64"
   config.vm.provider "virtualbox" do |v|
     v.memory = 1024
     v.cpus = 2
   end
 
-  #consul
-  (1..3).each do |i|
-    config.vm.define vm_name = "consul#{i}" do |consul|
-        consul.vm.hostname = vm_name
-        consul.vm.network "private_network", ip: "192.168.2.1#{i}"
-        consul.vm.network "forwarded_port", guest: 8500, host: 8500 + i
-      consul.vm.provision "shell", path: "scripts/consul.sh", run: "always"
-    end
+  #server
+  config.vm.define vm_name = "server" do |s|
+    s.vm.hostname = vm_name
+    s.vm.network "private_network", ip: "192.168.2.20"
+    s.vm.network "forwarded_port", guest: 8200, host: 8200 + i
+    #s.vm.provision "shell", path: "scripts/consul.sh", run: "always" 
+    #s.vm.provision "shell", path: "scripts/nomad.sh", run: "always"
   end
 
-  #nomad-server
-  (1..3).each do |i|
-    config.vm.define vm_name = "nomad-server#{i}" do |nomad|
-      nomad.vm.hostname = vm_name
-      nomad.vm.network "private_network", ip: "192.168.2.2#{i}"
-      nomad.vm.network "forwarded_port", guest: 8200, host: 8200 + i
-      nomad.vm.provision "shell", path: "scripts/consul.sh", run: "always" 
-      nomad.vm.provision "shell", path: "scripts/nomad.sh", run: "always"
-    end
-  end
-
-  #nomad-agent
-  (1..3).each do |i|
-    config.vm.define vm_name = "nomad-agent#{i}" do |nomad|
-      nomad.vm.hostname = vm_name
-      nomad.vm.network "private_network", ip: "192.168.2.3#{i}"
-      nomad.vm.provision "shell", path: "scripts/docker.sh"
-      nomad.vm.provision "shell", path: "scripts/consul.sh", run: "always"
-      nomad.vm.provision "shell", path: "scripts/nomad.sh", run: "always"
-    end
+  #agent
+  config.vm.define vm_name = "client" do |c|
+    c.vm.hostname = vm_name
+    c.vm.network "private_network", ip: "192.168.2.30"
+    c.vm.provision "shell", path: "scripts/docker.sh"
+    #c.vm.provision "shell", path: "scripts/consul.sh", run: "always"
+    #c.vm.provision "shell", path: "scripts/nomad.sh", run: "always"
   end
 
 end
