@@ -10,6 +10,7 @@ Vagrant.configure("2") do |config|
   end
 
   #We will iterate over network, and define dc count
+  #ip and dc
   [ "192.168.56", "192.168.66" ].to_enum.with_index(1).each do |ip, dc|
 
     #server
@@ -58,6 +59,6 @@ Vagrant.configure("2") do |config|
     #end client
 
   end
-  #end dc
+  #end ip dc
 
 end
