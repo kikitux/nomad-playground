@@ -10,7 +10,7 @@ Vagrant.configure("2") do |config|
   end
 
   #We will iterate over network, and define dc count
-  ["192.168.56", "192.168.66" ].to_enum.with_index(1).each do |ip, dc|
+  [ "192.168.56", "192.168.66" ].to_enum.with_index(1).each do |ip, dc|
 
     #server
     config.vm.define "server-dc#{dc}" do |s|
@@ -19,7 +19,7 @@ Vagrant.configure("2") do |config|
       WAN_JOIN ||= "#{ip}.20"
 
       s.vm.hostname = "server-dc#{dc}"
-      s.vm.network "private_network", ip: "#{ip}.20"
+      s.vm.network "private_network", ip: "#{ip}.20", netmask:"255.255.0.0"
 
       s.vm.network "forwarded_port", guest: 4646, host: 4646 if dc == 1 #nomad
       s.vm.network "forwarded_port", guest: 8200, host: 8200 if dc == 1 #vault
@@ -46,12 +46,12 @@ Vagrant.configure("2") do |config|
       config.vm.define "client#{i}-dc#{dc}" do |c|
 
         c.vm.hostname = "client#{i}-dc#{dc}"
-        c.vm.network "private_network", ip: "#{ip}.#{30+i}"
+        c.vm.network "private_network", ip: "#{ip}.#{30+i}", netmask:"255.255.0.0"
 
-        c.vm.provision "shell", env: { "DC" => "dc#{dc}" , "LAN_JOIN" => "#{ip}.#{20}"},
+        c.vm.provision "shell", env: { "DC" => "dc#{dc}" , "LAN_JOIN" => "#{ip}.#{20}" },
           path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/consul-client/consul.sh"
 
-        c.vm.provision "shell", env: { "DC" => "dc#{dc}" , "LAN_JOIN" => "#{ip}.#{20}"},
+        c.vm.provision "shell", env: { "DC" => "dc#{dc}" , "LAN_JOIN" => "#{ip}.#{20}" },
           path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/nomad-client/nomad.sh"
       end
     end
