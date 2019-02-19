@@ -34,8 +34,9 @@ Vagrant.configure("2") do |config|
       s.vm.provision "shell", env: { "DC" => "dc#{dc}" , "WAN_JOIN" => WAN_JOIN },
         path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/nomad-1server/nomad.sh"
       
-      #vault-dev only on dc1
+      #only on dc1
       if dc == 1
+        #vault-dev 
         s.vm.provision "shell", path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/vault-dev/vault.sh"
       end
 
