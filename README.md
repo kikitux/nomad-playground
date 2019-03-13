@@ -16,5 +16,7 @@ Vault root token is `changeme`
 Then you can reach the services at
 
 consul http://localhost:8500
+
 nomad http://localhost:4646
+
 vault http://localhost:8200
