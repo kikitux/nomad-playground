@@ -22,9 +22,11 @@ Vagrant.configure("2") do |config|
       s.vm.hostname = "server-dc#{dc}"
       s.vm.network "private_network", ip: "#{ip}.20", netmask:"255.255.0.0"
 
+      s.vm.network "forwarded_port", guest: 3000, host: 3000 if dc == 1 #grafana
       s.vm.network "forwarded_port", guest: 4646, host: 4646 if dc == 1 #nomad
       s.vm.network "forwarded_port", guest: 8200, host: 8200 if dc == 1 #vault
       s.vm.network "forwarded_port", guest: 8500, host: 8500 if dc == 1 #consul
+      s.vm.network "forwarded_port", guest: 9090, host: 9090 if dc == 1 #prometheus
 
       #consul
       s.vm.provision "shell", env: { "DC" => "dc#{dc}" , "WAN_JOIN" => WAN_JOIN },
@@ -36,8 +38,20 @@ Vagrant.configure("2") do |config|
       
       #only on dc1
       if dc == 1
-        #vault-dev 
-        s.vm.provision "shell", path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/vault-dev/vault.sh"
+        
+        # vault
+        s.vm.provision "shell",
+          path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/vault-dev/vault.sh"
+        
+        # prometheus
+        s.vm.provision "shell",
+          path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/provision/prometheus.sh"
+        
+        # grafana
+        s.vm.provision "shell",
+          path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/provision/grafana.sh"
+
+        
       end
 
     end
