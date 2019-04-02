@@ -49,7 +49,7 @@ Vagrant.configure("2") do |config|
         
         # grafana
         s.vm.provision "shell",
-          path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/provision/grafana.sh"
+          path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/provision/grafana-server.sh"
 
         
       end
