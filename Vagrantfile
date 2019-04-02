@@ -28,16 +28,16 @@ Vagrant.configure("2") do |config|
       s.vm.network "forwarded_port", guest: 8500, host: 8500 if dc == 1 #consul
       s.vm.network "forwarded_port", guest: 9090, host: 9090 if dc == 1 #prometheus
 
-      #consul
-      s.vm.provision "shell", env: { "DC" => "dc#{dc}" , "WAN_JOIN" => WAN_JOIN },
-        path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/consul-1server/consul.sh"
-
-      #nomad
-      s.vm.provision "shell", env: { "DC" => "dc#{dc}" , "WAN_JOIN" => WAN_JOIN },
-        path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/nomad-1server/nomad.sh"
-      
       #only on dc1
       if dc == 1
+
+        #consul
+        s.vm.provision "shell", 
+          path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/consul-1server/consul.sh"
+
+        #nomad
+        s.vm.provision "shell", 
+          path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/nomad-1server/nomad.sh"
         
         # vault
         s.vm.provision "shell",
@@ -51,8 +51,20 @@ Vagrant.configure("2") do |config|
         s.vm.provision "shell",
           path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/provision/grafana-server.sh"
 
+      end # end only on dc1
+
+      #only on dc1
+      if dc == 2
+
+        #consul
+        s.vm.provision "shell", env: { "DC" => "dc#{dc}" , "WAN_JOIN" => WAN_JOIN },
+          path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/consul-1server/consul.sh"
+
+        #nomad
+        s.vm.provision "shell", env: { "DC" => "dc#{dc}" , "WAN_JOIN" => WAN_JOIN },
+          path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/nomad-1server/nomad.sh"
         
-      end
+      end # end only on dc2
 
     end
     #end server
@@ -72,6 +84,10 @@ Vagrant.configure("2") do |config|
       end
     end
     #end client
+    
+    # node_exporter, os metrics for prometheus
+    config.vm.provision "shell",
+      path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/provision/node_exporter.sh"
 
   end
   #end ip dc
