@@ -53,7 +53,7 @@ Vagrant.configure("2") do |config|
 
       end # end only on dc1
 
-      #only on dc1
+      #only on dc2
       if dc == 2
 
         #consul
