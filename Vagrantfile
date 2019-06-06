@@ -51,6 +51,10 @@ Vagrant.configure("2") do |config|
         s.vm.provision "shell",
           path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/provision/grafana-server.sh"
 
+        # node_exporter, os metrics for prometheus
+        s.vm.provision "shell",
+          path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/provision/node_exporter.sh"
+
       end # end only on dc1
 
       #only on dc2
@@ -63,6 +67,10 @@ Vagrant.configure("2") do |config|
         #nomad
         s.vm.provision "shell", env: { "DC" => "dc#{dc}" , "WAN_JOIN" => WAN_JOIN },
           path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/nomad-1server/nomad.sh"
+
+        # node_exporter, os metrics for prometheus
+        s.vm.provision "shell",
+          path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/provision/node_exporter.sh"
         
       end # end only on dc2
 
@@ -70,7 +78,7 @@ Vagrant.configure("2") do |config|
     #end server
 
     #client
-    (1..1).each do |i|  
+    (1..2).each do |i|  
       config.vm.define "client#{i}-dc#{dc}" do |c|
 
         c.vm.hostname = "client#{i}-dc#{dc}"
@@ -81,13 +89,15 @@ Vagrant.configure("2") do |config|
 
         c.vm.provision "shell", env: { "DC" => "dc#{dc}" , "LAN_JOIN" => "#{ip}.#{20}" },
           path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/nomad-client/nomad.sh"
+
+        # node_exporter, os metrics for prometheus
+        c.vm.provision "shell",
+          path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/provision/node_exporter.sh"
+
       end
     end
     #end client
     
-    # node_exporter, os metrics for prometheus
-    config.vm.provision "shell",
-      path: "https://raw.githubusercontent.com/kikitux/curl-bash/master/provision/node_exporter.sh"
 
   end
   #end ip dc
