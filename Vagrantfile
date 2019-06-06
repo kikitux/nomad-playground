@@ -78,7 +78,7 @@ Vagrant.configure("2") do |config|
     #end server
 
     #client
-    (1..2).each do |i|  
+    (1..1).each do |i|  
       config.vm.define "client#{i}-dc#{dc}" do |c|
 
         c.vm.hostname = "client#{i}-dc#{dc}"
